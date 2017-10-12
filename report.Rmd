@@ -94,6 +94,8 @@ suppressPackageStartupMessages({
   )
 })
 source("functions.R")
+# Take all R colors from graphical devices (with grey removed)
+large_color_palette = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)]
 ```
 
 `r if (!is.null(params$test_description)) { params$test_description }`
@@ -514,7 +516,7 @@ event_count_function() + theme_min()
 ```{r event_count_wiki, echo=FALSE, eval=(n_wiki > 1), fig.height=(5 * n_wiki)}
 event_count_function(by_wiki = TRUE) + 
   theme_facet() +
-  facet_wrap(~ wiki, nrow = n_wiki, scales = "free_y")
+  facet_wrap(~ wiki, ncol = 1, scales = "free_y")
 ```
 
 ```{r event_after_click_all, echo=FALSE}
@@ -529,10 +531,10 @@ event_after_click_function <- function(by_wiki = FALSE, ...) {
 event_after_click_function() + theme_min()
 ```
 
-```{r event_after_click_wiki, echo=FALSE, eval=(n_wiki > 1), fig.height=(5 * n_wiki)}
+```{r event_after_click_wiki, echo=FALSE, eval=(n_wiki > 1), fig.height=(5 * ceiling(n_wiki / 2))}
 event_after_click_function(by_wiki = TRUE) +
   theme_facet() +
-  facet_wrap(~ wiki, nrow = n_wiki, scales = "free_y")
+  facet_wrap(~ wiki, ncol = 2, scales = "free_y")
 ```
 
 #### Searches
@@ -559,7 +561,7 @@ searches %>%
   knitr::kable()
 ```
 
-```{r daily_searches, echo=FALSE}
+```{r daily_searches, echo=FALSE, fig.height=(4 * n_wiki)}
 searches %>%
   group_by(group, wiki, date) %>%
   summarize(`All Searches` = n(), `Searches with Results` = sum(`got same-wiki results`), `Searches with Clicks` = sum(`same-wiki clickthrough`)) %>%
@@ -583,7 +585,7 @@ n_results_summary_function <- function(by_wiki = FALSE, ...) {
     group_by(!!! rlang::syms(c("group", "results", switch(by_wiki, "wiki", NULL)))) %>%
     summarize(searches = length(unique(serp_id[!is.na(serp_id)]))) %>%
     bar_chart(x = "results", y = "searches", x_lab = "Number of same-wiki results returned", 
-              y_lab = "Number of searches", title = expression(paste("Number of searches with ", italic("n"), " same-wiki result returned, by test group", switch(by_wiki, "and wiki", NULL))))
+              y_lab = "Number of searches", title = paste("Number of searches with n same-wiki result returned, by test group", switch(by_wiki, "and wiki", NULL)))
 }
 n_results_summary_function() + theme_min()
 ```
@@ -609,7 +611,7 @@ serp_offset_summary_function <- function(by_wiki = FALSE, ...) {
     group_by(!!! rlang::syms(c("group", "offset", switch(by_wiki, "wiki", NULL)))) %>%
     tally %>%
     bar_chart(x = "offset", y = "n", x_lab = "Offset", y_lab = "Number of SERPs", 
-              title = expression(paste("Number of SERPs with ", italic("n"), " offset results, by test group", switch(by_wiki, "and wiki", NULL))),
+              title = paste("Number of SERPs with n offset results, by test group", switch(by_wiki, "and wiki", NULL)),
               caption = "This can be regarded as a proxy for users visiting additional pages of their search results.") +
     scale_x_discrete(limits = c("No offset (page 1)", Pluralize(c(20, 40, 60, 80), "result"), "100+ results"))
 }
@@ -643,14 +645,15 @@ summarize_uas <- function(data) {
     tally %>%
     mutate(prop = paste0(scales::percent_format()(n/sum(n)), " (", n, ")")) %>%
     select(-n) %>%
-    tidyr::spread(group, prop)
+    tidyr::spread(group, prop) %>%
+    ungroup
 }
 get_bayes_factor <- function(data) {
   BF <- data %>%
     tally %>%
     tidyr::spread(group, n) %>%
     ungroup %>%
-    select(params$test_group_names) %>%
+    select(dplyr::one_of(params$test_group_names)) %>%
     as.matrix() %>%
     # see http://bayesfactorpcl.r-forge.r-project.org/#ctables for more info
     BayesFactor::contingencyTableBF(sampleType = "indepMulti", fixedMargin = "cols")
@@ -808,7 +811,7 @@ iwclick_position_function <- function(by_wiki = FALSE, ...) {
 iwclick_position_function() + theme_min()
 ```
 
-```{r iwclick_position_wiki, eval=("iwclick" %in% events$event & n_wiki > 1), echo=FALSE, fig.height=(5 * n_wiki)}
+```{r iwclick_position_wiki, eval=("iwclick" %in% events$event & n_wiki > 1), echo=FALSE, fig.height=(4 * n_wiki)}
 iwclick_position_function(by_wiki = TRUE) + 
   facet_wrap(~ wiki, nrow = n_wiki, scales = "free_y") +
   theme_facet()
@@ -1044,7 +1047,7 @@ samewiki_ctr_bywiki %>%
   theme_facet()
 ```
 
-```{r engagement_OR_wiki, eval=(n_wiki > 1), echo=FALSE, results='asis', include=TRUE}
+```{r engagement_OR_wiki, eval=(n_wiki > 1), echo=FALSE, fig.width=11, fig.height=10, results='asis', include=TRUE}
 # TODO: duplicated code engagement_OR_all
 control_group <- grep("control", params$`test_group_names`, value = TRUE)
 test_group <- setdiff(params$`test_group_names`, control_group)
@@ -1063,17 +1066,16 @@ for (this_group in test_group) {
       labels = c("Pr[Control Engaging]", "Pr[Test Engaging]", "Pr[Test] - Pr[Control]", "Relative Risk", "Odds Ratio")
     )) %>%
     ggplot(aes(x = 1, y = estimate, ymin = conf.low, ymax = conf.high)) +
-    geom_pointrange() +
-    geom_text(aes(label = round(estimate, 4), y = estimate,
-                  hjust = "left"), nudge_x = 0.005) +
+    geom_linerange() +
+    geom_label(aes(label = round(estimate, 3)), show.legend = FALSE) +
     facet_grid(term ~ wiki, scales = "free_y") +
-    scale_x_continuous(limits = c(0.99, 1.02)) +
+    scale_x_continuous(limits = c(0.99, 1.01)) +
     labs(
       x = NULL, y = "Estimate",
       title = "How likely test group users were to engage with search results",
       subtitle = "95% credible intervals calculated as Highest Posterior Density (HPD) intervals"
     ) +
-    theme_facet(strip.text.y = element_text(size = 12, angle = 0), clean_xaxis = TRUE)
+    theme_facet(strip.text.y = element_text(size = 12), clean_xaxis = TRUE)
   print(this_plot)
   cat("\n")
 }
@@ -1142,7 +1144,7 @@ first_clicked_function() +
 
 ```{r first_clicked_wiki, echo=FALSE, eval=(n_wiki > 1), fig.height=(4 * n_wiki)}
 first_clicked_function(by_wiki = TRUE) + 
-  facet_wrap(~ wiki + `first clicked result's position`, ncol = 5, scale = "free_y") +
+  facet_grid(wiki ~ `first clicked result's position`, scale = "free_y") +
   theme_facet(axis.text.x = element_text(angle = 90))
 ```
 
@@ -1184,7 +1186,7 @@ max_clicked_function() +
 
 ```{r max_clicked_wiki, echo=FALSE, eval=(n_wiki > 1), fig.height=(4 * n_wiki)}
 max_clicked_function(by_wiki = TRUE) + 
-  facet_wrap(~ wiki + `max clicked position (same-wiki)`, ncol = 6, scale = "free_y") +
+  facet_grid(wiki ~ `max clicked position (same-wiki)`, scale = "free_y") +
   theme_facet(axis.text.x = element_text(angle = 90))
 ```
 
@@ -1320,7 +1322,7 @@ ggsurv <- survminer::ggsurvplot(
   xlab = "T (Dwell Time in seconds)",
   ylab = "Proportion of visits longer than T (P%)",
   surv.scale = "percent",
-  palette = "Set1",
+  palette = sample(large_color_palette, n_wiki*length(params$test_group_names)),
   legend = "bottom",
   legend.title = "Group",
   ggtheme = theme_facet()
@@ -1448,7 +1450,7 @@ ggsurv <- survminer::ggsurvplot(
   xlab = "T (Dwell Time in seconds)",
   ylab = "Proportion of SERPs longer than T (P%)",
   surv.scale = "percent",
-  palette = "Set1",
+  palette = sample(large_color_palette, n_wiki*length(params$test_group_names)),
   legend = "bottom",
   legend.title = "Group",
   ggtheme = theme_facet()
