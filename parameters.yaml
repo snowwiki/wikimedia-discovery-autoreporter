@@ -17,4 +17,5 @@ test_group_names: [explore_similar_control, explore_similar_test]
 event_action: NULL # if not NULL, only specified actions are selected
 event_source: fulltext # autocomplete not yet supported
 other_filter: "event_searchSessionId <> 'explore_similar_test'" # if not NULL, these filters will be appended to WHERE clause
+serp_dwell_time: false # If true, dwell time of fulltext search result pages from autocomplete will be included
 debug: false # setting to false hides messages and warnings
