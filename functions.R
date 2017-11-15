@@ -60,29 +60,6 @@ parse_extraParams <- function(extraParams, action){
   }
 }
 
-# ggplot themes
-theme_min <- function(base_family = "", ...) {
-  ggplot2::theme_minimal(base_size = 12, base_family = base_family) +
-    ggplot2::theme(legend.position = "bottom", strip.placement = "outside", ...)
-}
-theme_facet <- function(base_family = "", border = TRUE, clean_xaxis = FALSE, ...) {
-  theme <- theme_min(base_family = base_family, ...) +
-    ggplot2::theme(strip.background = element_rect(fill = "gray90"))
-  if (border) {
-    theme <- theme + ggplot2::theme(panel.border = element_rect(color = "gray30", fill = NA))
-  }
-  if (clean_xaxis) {
-    theme <- theme +
-      ggplot2::theme(
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.text.x = element_blank()
-      )
-  }
-  return(theme)
-}
-
 # Bar chart
 bar_chart <- function(data = NULL, x, y, geom_text_size = 3, x_lab = NULL, y_lab = NULL, title = NULL, caption = NULL, subtitle = NULL, ...) {
   ggplot2::ggplot(data = data, aes_string(x = x, y = y, fill = "group")) +
