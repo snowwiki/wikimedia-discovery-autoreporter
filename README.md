@@ -8,7 +8,8 @@ The reports could be run on local machine and analytic clusters (stat1005). If y
 
 ```R
 install.packages(c("tidyverse", "toOrdinal", "jsonlite", "yaml", "rmarkdown", "tools",
-  "knitr", "RMySQL", "data.table", "lubridate", "binom", "survival", "survminer", "import"))
+  "knitr", "RMySQL", "data.table", "lubridate", "binom", "survival", "survminer", "import",
+  "BayesFactor", "formattable", "DT", "htmltools", "scales", "Rcpp", "urltools", "rlang", "RColorBrewer"))
 devtools::install_git("https://gerrit.wikimedia.org/r/p/wikimedia/discovery/wmf.git")
 devtools::install_git("https://gerrit.wikimedia.org/r/p/wikimedia/discovery/polloi.git")
 devtools::install_github("bearloga/BCDA")

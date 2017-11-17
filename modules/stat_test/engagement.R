@@ -5,7 +5,7 @@ samewiki_ctr_function <- function(by_wiki = FALSE, ...) {
     summarize(clickthroughs = sum(`same-wiki clickthrough`), n_search = n()) %>%
     ungroup %>%
     cbind(
-      as.data.frame(binom:::binom.bayes(x = .$clickthroughs, n = .$n_search, conf.level = 0.95,tol = 1e-9))
+      as.data.frame(binom:::binom.bayes(x = .$clickthroughs, n = .$n_search, conf.level = 0.95, tol = 1e-9))
     )
 }
 samewiki_ctr_all <- samewiki_ctr_function() # save object samewiki_ctr_all for odds ratio plot
@@ -13,7 +13,7 @@ p <- samewiki_ctr_all %>%
   pointrange_chart(y_lab = "Clickthrough rate", title = "Same-wiki clickthrough rates by test group",
                    subtitle = "With 95% credible intervals.") +
   wmf::theme_facet(border = FALSE)
-ggsave("engagement_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width)
+ggsave("engagement_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width, limitsize = FALSE)
 rm(p)
 
 if (n_wiki > 1) {
@@ -23,13 +23,13 @@ if (n_wiki > 1) {
                      subtitle = "With 95% credible intervals.") +
     facet_wrap(~ wiki, ncol = 3, scales = "free_y") +
     wmf::theme_facet()
-  ggsave("engagement_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = ifelse(n_wiki < 4, fig_height, 4 * ceiling(n_wiki / 3)), width = fig_width)
+  ggsave("engagement_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = ifelse(n_wiki < 4, fig_height, 3 * ceiling(n_wiki / 3)), width = fig_width, limitsize = FALSE)
   rm(p)
 }
 
 # Engagement odds ratio for all
-control_group <- grep("control", report_params$test_group_names, value = TRUE)
-test_group <- setdiff(report_params$test_group_names, control_group)
+control_group <- grep("control", traditional_test_groups, value = TRUE)
+test_group <- setdiff(traditional_test_groups, control_group)
 
 for (this_group in test_group) {
   this_plot <- samewiki_ctr_all %>%
@@ -53,7 +53,7 @@ for (this_group in test_group) {
       subtitle = "95% credible intervals calculated as Highest Posterior Density (HPD) intervals"
     ) +
     wmf::theme_facet(strip.text.y = element_text(size = 12, angle = 0), clean_xaxis = TRUE)
-  ggsave(paste0(this_group, "_engagement_OR_all.png"), this_plot, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width)
+  ggsave(paste0(this_group, "_engagement_OR_all.png"), this_plot, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width, limitsize = FALSE)
   rm(this_plot)
 }
 
@@ -83,7 +83,7 @@ if (n_wiki > 1) {
         subtitle = "95% credible intervals calculated as Highest Posterior Density (HPD) intervals"
       ) +
       wmf::theme_facet(strip.text.y = element_text(size = 12), clean_xaxis = TRUE)
-    ggsave(paste0(this_group, "_engagement_OR_wiki.png"), this_plot, path = fig_path, units = "in", dpi = plot_resolution, height = 10, width = 12)
+    ggsave(paste0(this_group, "_engagement_OR_wiki.png"), this_plot, path = fig_path, units = "in", dpi = plot_resolution, height = 10, width = 12, limitsize = FALSE)
     rm(this_plot)
   }
 }
@@ -95,7 +95,7 @@ ctr <- searches %>%
   summarize(n_search = n(), clickthroughs = sum(`same-wiki clickthrough`)) %>%
   ungroup %>%
   cbind(
-    as.data.frame(binom:::binom.bayes(x = .$clickthroughs, n = .$n_search, conf.level = 0.95,tol = 1e-9))
+    as.data.frame(binom:::binom.bayes(x = .$clickthroughs, n = .$n_search, conf.level = 0.95, tol = 1e-9))
   )
 
 p <- searches %>%
@@ -104,7 +104,7 @@ p <- searches %>%
   summarize(n_search = n(), clickthroughs = sum(`same-wiki clickthrough`)) %>%
   ungroup %>%
   cbind(
-    as.data.frame(binom:::binom.bayes(x = .$clickthroughs, n = .$n_search, conf.level = 0.95,tol = 1e-9))
+    as.data.frame(binom:::binom.bayes(x = .$clickthroughs, n = .$n_search, conf.level = 0.95, tol = 1e-9))
   ) %>%
   ggplot(aes(x = date, color = group, y = mean, ymin = lower, ymax = upper)) +
   geom_hline(data = ctr, aes(yintercept = mean, color = group), linetype = "dashed") +
@@ -116,6 +116,6 @@ p <- searches %>%
   facet_wrap(~ wiki, ncol = 2, scales = "free_y") +
   labs(title = "Daily search-wise clickthrough rates rate by group", subtitle = "Dashed lines mark the overall clickthrough rate") +
   wmf::theme_facet()
-ggsave("daily_ctr.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = ifelse(n_wiki < 3, fig_height, 3*ceiling(n_wiki/2)), width = fig_width)
+ggsave("daily_ctr.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = ifelse(n_wiki < 3, fig_height, 3 * ceiling(n_wiki / 2)), width = fig_width, limitsize = FALSE)
 rm(p)
 rm(ctr)

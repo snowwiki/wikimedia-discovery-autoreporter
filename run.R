@@ -8,7 +8,8 @@ if (Sys.info()["nodename"] == "stat1005") {
 dependencies <- c(
   "tidyverse", "toOrdinal", "jsonlite", "yaml", "rmarkdown", "wmf", "tools",
   "knitr", "RMySQL", "data.table", "lubridate", "binom", "BCDA", "survival",
-  "survminer", "polloi", "import", "BayesFactor", "formattable"
+  "survminer", "polloi", "import", "BayesFactor", "formattable", "DT",
+  "htmltools", "scales", "Rcpp", "urltools", "rlang", "RColorBrewer"
 )
 
 installed <- as.data.frame(installed.packages(), stringsAsFactors = FALSE)
@@ -32,6 +33,7 @@ opt <- parse_args(OptionParser(option_list = option_list))
 
 # Set up
 report_params <- yaml::yaml.load_file(opt$yaml_file)
+report_params <- yaml::yaml.load_file("reports/ltr_test_18lang.yaml")
 if (!dir.exists("reports")) {
   dir.create("reports")
 }
@@ -59,7 +61,13 @@ source("modules/sister_search/iwclicks.R")
 source("modules/explore_similar/esclicks.R")
 source("modules/explore_similar/hover_over.R")
 
-# Statistical test
+# Interleaved test
+source("modules/interleaved_test/data_processing.R")
+source("modules/interleaved_test/interleaved_preference.R")
+source("modules/interleaved_test/page_dwelltime.R")
+
+# Statistical test (traditional)
+source("modules/stat_test/remove_interleaved_data.R")
 source("modules/stat_test/zrr.R")
 source("modules/stat_test/engagement.R")
 source("modules/stat_test/first_clicked.R")
@@ -73,8 +81,7 @@ source("modules/stat_test/return_rate.R")
 source("modules/stat_test/serp_load_time.R")
 
 # Render report
-# rmarkdown::render("report.Rmd", output_file = output_report_name, params = report_params)
-rmarkdown::render("report.Rmd", output_file = "reports/test.html", params = report_params)
+rmarkdown::render("report.Rmd", output_file = output_report_name, params = report_params)
 if (!report_params$debug) {
   unlink(file.path("reports", "figures"), recursive = TRUE) # remove the temp figures directory
 }

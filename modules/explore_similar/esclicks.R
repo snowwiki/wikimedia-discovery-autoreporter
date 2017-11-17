@@ -24,14 +24,14 @@ if (exists("esclick_result")) {
   p <- esclick_breakdown_function() +
     facet_wrap(~ position, scales = "free_y") +
     wmf::theme_min(axis.text.x = element_text(angle = 90))
-  ggsave("esclick_breakdown_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width)
+  ggsave("esclick_breakdown_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width, limitsize = FALSE)
   rm(p)
 
   if (n_wiki > 1) {
     p <- esclick_breakdown_function(by_wiki = TRUE) +
       facet_grid(wiki ~ position, scales = "free_y") +
       wmf::theme_facet(axis.text.x = element_text(angle = 90))
-    ggsave("esclick_breakdown_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 5 * n_wiki, width = fig_width)
+    ggsave("esclick_breakdown_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 4 * n_wiki, width = fig_width, limitsize = FALSE)
     rm(p)
   }
 

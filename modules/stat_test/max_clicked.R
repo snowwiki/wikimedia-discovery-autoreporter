@@ -30,13 +30,13 @@ max_clicked_function <- function(by_wiki = FALSE, ...) {
 p <- max_clicked_function() +
   facet_wrap(~ `max clicked position (same-wiki)`, ncol = 6, scales = "free_y") +
   wmf::theme_facet(axis.text.x = element_text(angle = 90))
-ggsave("max_clicked_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width)
+ggsave("max_clicked_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width, limitsize = FALSE)
 rm(p)
 
 if (n_wiki > 1) {
   p <- max_clicked_function(by_wiki = TRUE) +
     facet_wrap(~ wiki + `max clicked position (same-wiki)`, ncol = 6, scales = "free_y") +
     wmf::theme_facet(axis.text.x = element_text(angle = 90))
-  ggsave("max_clicked_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 4 * n_wiki, width = 12)
+  ggsave("max_clicked_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 3 * n_wiki, width = 12, limitsize = FALSE)
   rm(p)
 }

@@ -3,6 +3,7 @@ set.seed(0)
 suppressPackageStartupMessages({
   library(magrittr)
   library(ggplot2)
+  library(Rcpp)
   import::from(
     # We don't import certain verbs (e.g. distinct, left_join, bind_rows)
     # to avoid potential name-conflicts and because they're one-time use.

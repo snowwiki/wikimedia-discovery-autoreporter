@@ -1,5 +1,6 @@
 # PaulScore Calculation
-query_score <- function(positions, F) { # 0-based positions
+# 0-based positions
+query_score <- function(positions, F) {
   if (length(positions) == 1 || all(is.na(positions))) {
     # no clicks were made
     return(0)
@@ -66,7 +67,7 @@ bar_chart <- function(data = NULL, x, y, geom_text_size = 3, x_lab = NULL, y_lab
     ggplot2::geom_bar(stat = "identity", position = "dodge") +
     ggplot2::scale_fill_brewer("Group", palette = "Set1") +
     ggplot2::scale_y_continuous(labels = polloi::compress) +
-    ggplot2::geom_text(aes_string(label = y, vjust = -0.5), position = position_dodge(width = 1), size = geom_text_size) +
+    ggplot2::geom_text(aes_string(label = y, vjust = -0.05), position = position_dodge(width = 1), size = geom_text_size) +
     ggplot2::labs(y = y_lab, x = x_lab, title = title, subtitle = subtitle, caption = caption)
 }
 
@@ -78,4 +79,60 @@ pointrange_chart <- function(data = NULL, y_lab = NULL, title = NULL, caption = 
     ggplot2::scale_y_continuous(labels = scales::percent_format()) +
     ggplot2::scale_color_brewer(palette = "Set1") +
     ggplot2::labs(x = NULL, color = "Group", y = y_lab, title = title, subtitle = subtitle)
+}
+
+cppFunction('CharacterVector fill_in(CharacterVector ids) {
+  CharacterVector new_ids(ids.size());
+  String current_id = ids[0];
+  new_ids[0] = current_id;
+  for (int i = 1; i < ids.size(); i++) {
+    if (ids[i] != NA_STRING) {
+      current_id = ids[i];
+    }
+    new_ids[i] = current_id;
+  }
+  return new_ids;
+}')
+
+cppFunction('NumericVector cumunique(CharacterVector ids) {
+  NumericVector count(ids.size());
+  String current_id = ids[0];
+  count[0] = 1;
+  for (int i = 1; i < ids.size(); i++) {
+    if (ids[i] == current_id) {
+      count[i] = count[i-1];
+    } else {
+      count[i] = count[i-1] + 1;
+      current_id = ids[i];
+    }
+  }
+  return count;
+}')
+
+# Process interleaved team draft
+process_session <- function(df) {
+  processed_session <- unsplit(lapply(split(df, df$serp_id), function(df) {
+    if (is.na(df$event_extraParams[1]) || df$event_extraParams[1] == "") {
+      visited_pages <- rep(as.character(NA), times = nrow(df))
+    } else {
+      from_json <- jsonlite::fromJSON(df$event_extraParams[1], simplifyVector = FALSE)
+      if (!("teamDraft" %in% names(from_json)) || all(is.na(df$article_id))) {
+        visited_pages <- rep(as.character(NA), times = nrow(df))
+      } else {
+        team_a <- unlist(from_json$teamDraft$a)
+        team_b <- unlist(from_json$teamDraft$b)
+        visited_pages <- vapply(df$article_id, function(article_id) {
+          if (article_id %in% team_a) {
+            return("A")
+          } else if (article_id %in% team_b) {
+            return("B")
+          } else {
+            return(as.character(NA))
+          }
+        }, "")
+      }
+    }
+    return(visited_pages)
+  }), df$serp_id)
+  return(processed_session)
 }

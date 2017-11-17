@@ -15,16 +15,16 @@ if ("user_agent" %in% names(events)) {
   summarize_uas <- function(data) {
     data %>%
       tally %>%
-      mutate(prop = paste0(scales::percent_format()(n/sum(n)), " (", n, ")")) %>%
+      mutate(prop = paste0(scales::percent_format()(n / sum(n)), " (", n, ")")) %>%
       select(-n) %>%
-      tidyr::spread(group, prop) %>%
+      tidyr::spread(group, prop, fill = "0.0% (0)") %>%
       ungroup
   }
 
   get_bayes_factor <- function(data) {
     BF <- data %>%
       tally %>%
-      tidyr::spread(group, n) %>%
+      tidyr::spread(group, n, fill = 0) %>%
       ungroup %>%
       select(dplyr::one_of(report_params$test_group_names)) %>%
       as.matrix() %>%

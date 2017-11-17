@@ -16,6 +16,7 @@ params:
   tss2_revision: 16909631
   wiki: enwiki
   test_group_names: [explore_similar_control, explore_similar_test]
+  interleaved_group_names: [ltr-i-1024]
   event_action: [searchResultPage, click, ssclick, visitPage, checkin, hover-on, hover-off, esclick]
   event_source: "fulltext"
   other_filter: "event_subTest IS NOT NULL"
@@ -110,7 +111,7 @@ dplyr::data_frame(
   SERPs = sum(events$event == "searchResultPage"),
   `Unique search queries` = length(unique(paste(events$session_id, events$query_hash))),
   # ^ includes other events besides SERP
-  Searches = length(unique(events$serp_id[!is.na(events$serp_id)])),
+  Searches = length(unique(events$search_id[!is.na(events$search_id)])),
   `Same-wiki clicks` = sum(events$event == "click"),
   `Other clicks` = sum(grepl("click", events$event) & events$event != "click")
 ) %>%
@@ -250,9 +251,6 @@ DT::datatable(
     target = 'row',
     backgroundColor = DT::styleInterval(2, c('transparent', 'yellow'))
   )
-```
-```{r ua_cleanup, eval=("user_agent" %in% names(events))}
-rm(os_summary, browser_summary, os_summary_counts_cols_index, browser_summary_counts_cols_index)
 ```
 
 `r if (any(exists("serp_iw"), exists("ssclick_des"), "ssclick" %in% events$event, "iwclick" %in% events$event)) { "### Sister Search {.tabset}" }`
@@ -491,4 +489,40 @@ cat("![](reports/figures/return_rate_wiki.png)")
 
 ```{r serp_loadtime_wiki, eval=(n_wiki > 1), results='asis'}
 cat("![](reports/figures/serp_loadtime_wiki.png)")
+```
+
+`r if (!is.null(report_params$interleaved_group_names)) { "## Interleaved test" }`
+
+`r if (!is.null(report_params$interleaved_group_names)) { "We use a technique called interleaving to evaluate the user-perceived relevance of search results from the experimental configuration. In it, each user is their own baseline -- we perform two searches behind the scenes and then interleave them together into a single set of results using the team draft algorithm described by Chapelle et al. (2012). For all the graphs in this section, A refers to control group or the first group in the interleaved group names, B referes to the name in the interleaved group names or the second group in the interleaved group names. For example, if the interleaved group name is 'ltr-i-1024', A is the control group and B is group '1024'; if the interleaved group name is 'ltr-i-20-1024', A is group '20' and B is group '1024'." }`
+
+`r if (!is.null(report_params$interleaved_group_names)) { "### Preference" }`
+
+```{r interleaved_pref_overall, eval=(!is.null(params$interleaved_group_names)), results='asis'}
+cat("![](reports/figures/interleaved_pref_overall.png)")
+```
+
+```{r interleaved_pref_overall_wiki, eval=(!is.null(params$interleaved_group_names) & n_wiki > 1), results='asis'}
+cat("![](reports/figures/interleaved_pref_overall_wiki.png)")
+```
+
+```{r interleaved_pref_daily, eval=(!is.null(params$interleaved_group_names)), results='asis'}
+cat("![](reports/figures/interleaved_pref_daily.png)")
+```
+
+```{r interleaved_pref_daily_wiki, eval=(!is.null(params$interleaved_group_names) & n_wiki > 1), results='asis'}
+cat("![](reports/figures/interleaved_pref_daily_wiki.png)")
+```
+
+`r if (!is.null(report_params$interleaved_group_names)) { "### Page visit times" }`
+
+```{r interleaved_survival_all, eval=(!is.null(params$interleaved_group_names)), results='asis'}
+cat("![](reports/figures/interleaved_survival_all.png)")
+```
+
+```{r interleaved_survival_wiki, eval=(!is.null(params$interleaved_group_names) & n_wiki > 1), results='asis', include=TRUE}
+for (this_group in params$interleaved_group_names) {
+  cat("**", this_group, "** \n", sep = "")
+  cat("![](reports/figures/", this_group, "_interleaved_survival_wiki.png)", sep = "")
+  cat("\n")
+}
 ```

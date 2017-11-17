@@ -17,6 +17,18 @@ events <- events %>%
 data_cleansing_info <- paste0("Fulltext search events: Deleted ", nrow(events_raw) - nrow(events), " duplicated events.")
 rm(events_raw) # to free up memory
 
+message("Removing unnecessary check-ins...")
+# Sum all scroll in checkin events
+events <- events %>%
+  group_by(wiki, group, session_id, page_id) %>%
+  mutate(event_scroll = ifelse(event == "checkin", sum(event_scroll), event_scroll)) %>% # sum all scroll on visitPage and checkin events
+  ungroup
+events <- events[order(events$group, events$session_id, events$page_id, events$article_id, events$event, events$event_checkin, na.last = FALSE), ]
+extra_checkins <- duplicated(events[, c("group", "session_id", "page_id", "article_id", "event")], fromLast = TRUE) & events$event == "checkin"
+data_cleansing_info <- paste0(data_cleansing_info, " Deleted ", sum(extra_checkins), " unnecessary check-in events and only keep the last one.")
+events <- events[!extra_checkins, ]
+rm(extra_checkins)
+
 message("Delete events with negative load time...")
 data_cleansing_info <- paste0(data_cleansing_info, " Deleted ", sum(events$load_time < 0, na.rm = TRUE), " events with negative load time.")
 events <- events %>%
@@ -25,19 +37,20 @@ events <- events %>%
 message("De-duplicating SERPs...")
 SERPs <- events %>%
   keep_where(event == "searchResultPage") %>%
-  select(c(session_id, page_id, query_hash, search_token)) %>%
-  group_by(session_id, query_hash) %>%
-  mutate(serp_id = page_id[1], cirrus_id = search_token[1]) %>%
+  dplyr::arrange(wiki, group, session_id, timestamp) %>%
+  select(c(group, session_id, page_id, query_hash)) %>%
+  group_by(group, session_id, query_hash) %>%
+  mutate(search_id = page_id[1]) %>%
   ungroup %>%
-  select(c(page_id, serp_id, cirrus_id))
+  select(c(group, session_id, page_id, search_id))
 events <- events %>%
-  dplyr::left_join(SERPs, by = "page_id")
+  dplyr::left_join(SERPs, by = c("group", "session_id", "page_id"))
 rm(SERPs) # to free up memory
 
 message("Removing events without an associated SERP (orphan clicks and check-ins)...")
 n_evnt <- nrow(events)
 events <- events %>%
-  keep_where(!(is.na(serp_id) & !(event %in% c("visitPage", "checkin")))) %>% # remove orphan click
+  keep_where(!(is.na(search_id) & !(event %in% c("visitPage", "checkin")))) %>% # remove orphan click
   group_by(session_id) %>%
   keep_where("searchResultPage" %in% event) %>% # remove orphan "visitPage" and "checkin"
   ungroup
@@ -53,16 +66,23 @@ events <- events %>%
   keep_where(session_id %in% temp$session_id[temp$unique_group])
 rm(temp)
 
-message("Remove sessions with more than 100 searches...")
+message("Remove sessions with more than 50 searches...")
 spider_session <- events %>%
   group_by(date, group, session_id) %>%
-  summarize(n_search = length(unique(serp_id))) %>%
-  keep_where(n_search > 100) %>%
+  summarize(n_search = length(unique(search_id))) %>%
+  keep_where(n_search > 50) %>%
   {.$session_id}
 events <- events %>%
   keep_where(!(session_id %in% spider_session))
-data_cleansing_info <- paste0(data_cleansing_info, " Removed ", length(spider_session), " sessions with more than 100 searches.")
+data_cleansing_info <- paste0(data_cleansing_info, " Removed ", length(spider_session), " sessions with more than 50 searches.")
 rm(spider_session)
+
+message("Fill in serp_id for visitedPage and checkin events...")
+events %<>%
+  mutate(serp_id = ifelse(event %in% c("visitPage", "checkin"), NA, page_id),
+         event = factor(event, levels = c("searchResultPage", "click", "ssclick", "iwclick", "hover-on", "esclick", "hover-off", "visitPage", "checkin"))) %>%
+  dplyr::arrange(wiki, group, session_id, timestamp, event) %>%
+  mutate(serp_id = fill_in(serp_id))
 
 # Number of wikis in the test
 n_wiki <- length(unique(events$wiki))

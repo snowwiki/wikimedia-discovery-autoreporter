@@ -13,13 +13,13 @@ search_abandon_rate_function <- function(by_wiki = FALSE, ...) {
       subtitle = "With 95% credible intervals.")
 }
 p <- search_abandon_rate_function() + wmf::theme_facet(border = FALSE)
-ggsave("search_abandon_rate_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width)
+ggsave("search_abandon_rate_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width, limitsize = FALSE)
 rm(p)
 
 if (n_wiki > 1) {
   p <- search_abandon_rate_function(by_wiki = TRUE) +
     facet_wrap(~ wiki, ncol = 3, scales = "free_y") +
     wmf::theme_facet()
-  ggsave("search_abandon_rate_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = ifelse(n_wiki < 4, fig_height, 4 * ceiling(n_wiki / 3)), width = fig_width)
+  ggsave("search_abandon_rate_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = ifelse(n_wiki < 4, fig_height, 3 * ceiling(n_wiki / 3)), width = fig_width, limitsize = FALSE)
   rm(p)
 }

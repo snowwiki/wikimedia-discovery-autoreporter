@@ -23,13 +23,13 @@ first_clicked_function <- function(by_wiki = FALSE, ...) {
 p <- first_clicked_function() +
   facet_wrap(~ `first clicked result's position`, ncol = 5, scales = "free_y") +
   wmf::theme_facet(axis.text.x = element_text(angle = 90))
-ggsave("first_clicked_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width)
+ggsave("first_clicked_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width, limitsize = FALSE)
 rm(p)
 
 if (n_wiki > 1) {
   p <- first_clicked_function(by_wiki = TRUE) +
     facet_wrap(~ wiki + `first clicked result's position`, ncol = 5, scales = "free_y") +
     wmf::theme_facet(axis.text.x = element_text(angle = 90))
-  ggsave("first_clicked_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 4 * n_wiki, width = 12)
+  ggsave("first_clicked_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 3 * n_wiki, width = 12, limitsize = FALSE)
   rm(p)
 }

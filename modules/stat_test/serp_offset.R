@@ -1,9 +1,9 @@
 if (exists("serp_offset")) {
   search_offset_function <- function(by_wiki = FALSE, ...) {
     serp_offset %>%
-      group_by(session_id, serp_id) %>%
+      group_by(session_id, search_id) %>%
       summarize(`Any page-turning` = any(offset > 0)) %>%
-      dplyr::right_join(searches, by = c("session_id", "serp_id")) %>%
+      dplyr::right_join(searches, by = c("session_id", "search_id")) %>%
       group_by(!!! rlang::syms(c(switch(by_wiki, "wiki", NULL), "group"))) %>%
       summarize(page_turn = sum(`Any page-turning`, na.rm = TRUE), n_search = n()) %>%
       ungroup %>%
@@ -18,14 +18,14 @@ if (exists("serp_offset")) {
   }
 
   p <- search_offset_function() + wmf::theme_facet(border = FALSE)
-  ggsave("search_offset_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width)
+  ggsave("search_offset_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width, limitsize = FALSE)
   rm(p)
 
   if (n_wiki > 1) {
     p <- search_offset_function(by_wiki = TRUE) +
       facet_wrap(~ wiki, ncol = 3, scales = "free_y") +
       wmf::theme_facet()
-    ggsave("search_offset_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = ifelse(n_wiki < 4, fig_height, 4 * ceiling(n_wiki / 3)), width = fig_width)
+    ggsave("search_offset_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = ifelse(n_wiki < 4, fig_height, 3 * ceiling(n_wiki / 3)), width = fig_width, limitsize = FALSE)
     rm(p)
   }
 

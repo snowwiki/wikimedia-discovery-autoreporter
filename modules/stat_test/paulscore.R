@@ -21,7 +21,7 @@ p <- searches %>%
   geom_text(aes(label = sprintf("%.3f", PaulScore), y = Upper + 0.01, vjust = "bottom"),
             position = position_dodge(width = 0.7)) +
   wmf::theme_min()
-ggsave("paulscores_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width)
+ggsave("paulscores_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width, limitsize = FALSE)
 rm(p)
 
 if (n_wiki > 1) {
@@ -50,6 +50,6 @@ if (n_wiki > 1) {
               position = position_dodge(width = 0.7)) +
     facet_wrap(~ wiki, ncol = 3, scales = "free_y") +
     wmf::theme_facet()
-  ggsave("paulscores_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = ifelse(n_wiki < 4, fig_height, 4 * ceiling(n_wiki / 3)), width = fig_width)
+  ggsave("paulscores_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = ifelse(n_wiki < 4, fig_height, 3 * ceiling(n_wiki / 3)), width = fig_width, limitsize = FALSE)
   rm(p)
 }

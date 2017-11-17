@@ -23,14 +23,14 @@ if (exists("hover_over")) {
   p <- hover_breakdown_function() +
     facet_wrap(~ results, scales = "free_y") +
     wmf::theme_min(axis.text.x = element_text(angle = 90))
-  ggsave("hover_breakdown_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 8, width = fig_width)
+  ggsave("hover_breakdown_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 8, width = fig_width, limitsize = FALSE)
   rm(p)
 
   if (n_wiki > 1) {
     p <- hover_breakdown_function(by_wiki = TRUE) +
       facet_grid(wiki ~ results, scales = "free_y") +
       wmf::theme_facet(axis.text.x = element_text(angle = 90))
-    ggsave("hover_breakdown_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 5 * n_wiki, width = 12)
+    ggsave("hover_breakdown_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 4 * n_wiki, width = 12, limitsize = FALSE)
     rm(p)
   }
 
@@ -65,7 +65,7 @@ if (all(c("hover-on", "hover-off") %in% events$event) & !is.null(events$event_ex
     facet_wrap(~ wiki, ncol = 2, scales = "free_y") +
     labs(title = "Daily search-wise hover-over rates", subtitle = "Dashed lines mark the overall hover-over rate") +
     wmf::theme_facet()
-  ggsave("daily_hover_rate.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 3*ceiling(n_wiki/2), width = fig_width)
+  ggsave("daily_hover_rate.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 3 * ceiling(n_wiki / 2), width = fig_width, limitsize = FALSE)
   rm(p)
 
   rm(hover_rate)

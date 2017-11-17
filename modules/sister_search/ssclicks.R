@@ -10,14 +10,14 @@ if (exists("ssclick_des")){
                 title = paste("Number of sister search clicks by project, test group", switch(by_wiki, "and wiki", NULL)))
   }
   p <- ssclick_project_function() + wmf::theme_min()
-  ggsave("ssclick_project_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width)
+  ggsave("ssclick_project_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width, limitsize = FALSE)
   rm(p)
 
   if (n_wiki > 1) {
     p <- ssclick_project_function(by_wiki = TRUE) +
       facet_wrap(~ wiki, nrow = n_wiki, scales = "free") +
       wmf::theme_facet()
-    ggsave("ssclick_project_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 5 * n_wiki, width = fig_width)
+    ggsave("ssclick_project_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 4 * n_wiki, width = fig_width, limitsize = FALSE)
     rm(p)
   }
 
@@ -36,14 +36,14 @@ if ("ssclick" %in% events$event) {
                 title = paste("Number of sister search clicks by clicked position, test group", switch(by_wiki, "and wiki", NULL)))
   }
   p <- ssclick_position_function() + wmf::theme_min()
-  ggsave("ssclick_position_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width)
+  ggsave("ssclick_position_all.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = fig_height, width = fig_width, limitsize = FALSE)
   rm(p)
 
   if (n_wiki > 1) {
     p <- ssclick_position_function(by_wiki = TRUE) +
       facet_wrap(~ wiki, nrow = n_wiki, scales = "free") +
       wmf::theme_facet()
-    ggsave("ssclick_position_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 5 * n_wiki, width = fig_width)
+    ggsave("ssclick_position_wiki.png", p, path = fig_path, units = "in", dpi = plot_resolution, height = 4 * n_wiki, width = fig_width, limitsize = FALSE)
     rm(p)
   }
 

@@ -8,9 +8,9 @@ events <- events %>%
 
 message("Aggregating by search...")
 searches <- events %>%
-  keep_where(!(is.na(serp_id))) %>% # remove visitPage and checkin events
-  arrange(date, session_id, serp_id, timestamp) %>%
-  group_by(group, wiki, session_id, serp_id) %>%
+  keep_where(!(is.na(search_id))) %>% # remove visitPage and checkin events
+  arrange(date, session_id, search_id, timestamp) %>%
+  group_by(group, wiki, session_id, search_id) %>%
   summarize(
     date = date[1],
     timestamp = timestamp[1],
@@ -56,19 +56,19 @@ if ("searchResultPage" %in% events$event & !is.null(events$event_extraParams)) {
     keep_where(event == "searchResultPage", `some same-wiki results` == "TRUE") %>%
     # SERPs with 0 results will not have an offset in extraParams ^
     mutate(offset = purrr::map_int(event_extraParams, ~ parse_extraParams(.x, action = "searchResultPage")$offset)) %>%
-    select(session_id, event_id, serp_id, offset)
+    select(session_id, event_id, search_id, offset)
 
   message("Processing SERP interwiki data...")
-  extract_iw <- function(session_id, event_id, serp_id, event_extraParams) {
+  extract_iw <- function(session_id, event_id, search_id, event_extraParams) {
     return(data.frame(
-      session_id, event_id, serp_id,
+      session_id, event_id, search_id,
       parse_extraParams(event_extraParams, action = "searchResultPage")$iw,
       stringsAsFactors = FALSE
     ))
   }
   serp_iw <- events %>%
     keep_where(event == "searchResultPage") %>%
-    select(session_id, event_id, serp_id, event_extraParams) %>%
+    select(session_id, event_id, search_id, event_extraParams) %>%
     purrr::pmap_df(extract_iw) %>%
     mutate(source = case_when(
       source == "wikt" ~ "Wiktionary",
@@ -104,12 +104,12 @@ if ("esclick" %in% events$event & !is.null(events$event_extraParams)) {
   esclick_result <- events %>%
     keep_where(event == "esclick") %>%
     cbind(purrr::map_df(.$event_extraParams, parse_extraParams, action = "esclick")) %>%
-    select(group, wiki, session_id, serp_id, page_id, event_id, hoverId, section, result, position)
+    select(group, wiki, session_id, search_id, page_id, event_id, hoverId, section, result, position)
 
   searches <- esclick_result %>%
-    group_by(group, wiki, session_id, serp_id) %>%
+    group_by(group, wiki, session_id, search_id) %>%
     summarize(with_esclick = TRUE) %>%
-    dplyr::right_join(searches, by = c("group", "wiki", "session_id", "serp_id")) %>%
+    dplyr::right_join(searches, by = c("group", "wiki", "session_id", "search_id")) %>%
     dplyr::mutate(with_esclick = ifelse(is.na(with_esclick), FALSE, with_esclick))
 }
 
@@ -118,12 +118,12 @@ if (all(c("hover-on", "hover-off") %in% events$event) & !is.null(events$event_ex
   hover_over <- events %>%
     keep_where(event %in% c("hover-on", "hover-off")) %>%
     cbind(purrr::map_df(.$event_extraParams, parse_extraParams, action = c("hover-on", "hover-off"))) %>%
-    select(timestamp, group, wiki, session_id, serp_id, page_id, event_id, event, hoverId, section, results)
+    select(timestamp, group, wiki, session_id, search_id, page_id, event_id, event, hoverId, section, results)
 
   searches <- hover_over %>%
     keep_where(event == "hover-on") %>%
-    group_by(group, wiki, session_id, serp_id) %>%
+    group_by(group, wiki, session_id, search_id) %>%
     summarize(n_hover = length(unique(hoverId))) %>%
-    dplyr::right_join(searches, by = c("group", "wiki", "session_id", "serp_id")) %>%
+    dplyr::right_join(searches, by = c("group", "wiki", "session_id", "search_id")) %>%
     dplyr::mutate(n_hover = ifelse(is.na(n_hover), 0, n_hover))
 }

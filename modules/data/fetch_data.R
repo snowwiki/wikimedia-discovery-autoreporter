@@ -3,6 +3,7 @@ query <- paste0("SELECT
     event_uniqueId AS event_id,
     event_mwSessionId,
     event_pageViewId AS page_id,
+    event_articleId AS article_id,
     event_searchSessionId AS session_id,
     event_subTest AS `group`,
     wiki,
@@ -26,7 +27,6 @@ query <- paste0("SELECT
     event_checkin,
     event_extraParams,
     event_msToDisplayResults AS load_time,
-    event_searchToken AS search_token,
     userAgent AS user_agent
   FROM TestSearchSatisfaction2_", report_params$tss2_revision, "\n",
   "WHERE LEFT(timestamp, 8) >= '", report_params$start_date, "' AND LEFT(timestamp, 8) < '", report_params$end_date, "' \n",
@@ -35,12 +35,13 @@ query <- paste0("SELECT
   ifelse(is.null(report_params$event_action), "", paste0("  AND event_action IN('", paste(report_params$event_action, collapse = "', '"), "') \n")),
   ifelse(is.null(report_params$event_source), "", paste0("  AND event_source IN('", paste(report_params$event_source, collapse = "', '"), "') \n")),
   ifelse(is.null(report_params$other_filter), "", paste0("  AND ", report_params$other_filter, " \n")),
-  "  AND CASE WHEN event_action = 'searchResultPage' THEN event_msToDisplayResults IS NOT NULL
-  WHEN event_action IN ('click', 'iwclick', 'ssclick') THEN event_position IS NOT NULL AND event_position > -1
-  WHEN event_action = 'visitPage' THEN event_pageViewId IS NOT NULL
-  WHEN event_action = 'checkin' THEN event_checkin IS NOT NULL AND event_pageViewId IS NOT NULL
-  ELSE TRUE
-  END;"
+  " AND INSTR(userAgent, '\"is_bot\": false') > 0
+    AND CASE WHEN event_action = 'searchResultPage' THEN event_msToDisplayResults IS NOT NULL
+      WHEN event_action IN ('click', 'iwclick', 'ssclick') THEN event_position IS NOT NULL AND event_position > -1
+      WHEN event_action = 'visitPage' THEN event_pageViewId IS NOT NULL
+      WHEN event_action = 'checkin' THEN event_checkin IS NOT NULL AND event_pageViewId IS NOT NULL
+      ELSE TRUE
+      END;"
 )
 
 # Fetch full-text search from autocomplete search to compute dwell time on SERP
@@ -63,14 +64,14 @@ query_autocomplete <- paste0("SELECT
   ifelse(is.null(report_params$test_group_names), "", paste0("  AND event_subTest IN('", paste(report_params$test_group_names, collapse = "', '"), "') \n")),
   ifelse(is.null(report_params$other_filter), "", paste0("  AND ", report_params$other_filter, " \n")),
   " AND event_source = 'autocomplete'
-  AND event_articleId IS NULL
-  AND event_action IN('visitPage', 'checkin')
-  AND CASE WHEN event_action = 'searchResultPage' THEN event_msToDisplayResults IS NOT NULL
-  WHEN event_action IN ('click', 'iwclick', 'ssclick') THEN event_position IS NOT NULL AND event_position > -1
-  WHEN event_action = 'visitPage' THEN event_pageViewId IS NOT NULL
-  WHEN event_action = 'checkin' THEN event_checkin IS NOT NULL AND event_pageViewId IS NOT NULL
-  ELSE TRUE
-  END;"
+    AND event_articleId IS NULL
+    AND event_action IN('visitPage', 'checkin')
+    AND CASE WHEN event_action = 'searchResultPage' THEN event_msToDisplayResults IS NOT NULL
+      WHEN event_action IN ('click', 'iwclick', 'ssclick') THEN event_position IS NOT NULL AND event_position > -1
+      WHEN event_action = 'visitPage' THEN event_pageViewId IS NOT NULL
+      WHEN event_action = 'checkin' THEN event_checkin IS NOT NULL AND event_pageViewId IS NOT NULL
+      ELSE TRUE
+      END;"
 )
 
 if (!is.null(report_params$query)) {
