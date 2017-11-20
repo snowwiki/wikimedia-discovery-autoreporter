@@ -33,7 +33,6 @@ opt <- parse_args(OptionParser(option_list = option_list))
 
 # Set up
 report_params <- yaml::yaml.load_file(opt$yaml_file)
-report_params <- yaml::yaml.load_file("reports/ltr_test_18lang.yaml")
 if (!dir.exists("reports")) {
   dir.create("reports")
 }

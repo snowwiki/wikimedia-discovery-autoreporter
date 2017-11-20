@@ -1,6 +1,7 @@
 if ("user_agent" %in% names(events)) {
 
   user_agents <- dplyr::distinct(events, wiki, session_id, group, user_agent)
+  user_agents$user_agent <- gsub('(Kindle Fire HD[X]? [0-9\\.]{1,3})"', '\\1', user_agents$user_agent, fixed = FALSE) # remove double quote in kindle name
   user_agents <- user_agents %>%
     cbind(., purrr::map_df(.$user_agent, ~ wmf::null2na(jsonlite::fromJSON(.x, simplifyVector = FALSE)))) %>%
     mutate(
