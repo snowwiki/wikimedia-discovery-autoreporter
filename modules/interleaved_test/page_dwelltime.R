@@ -18,9 +18,10 @@ if (!is.null(report_params$interleaved_group_names)) {
     xlab = "T (Dwell Time in seconds)",
     ylab = "Proportion of visits longer than T (P%)",
     surv.scale = "percent",
-    palette = colorRampPalette(RColorBrewer::brewer.pal(9, "Dark2"))(2 * length(report_params$interleaved_group_names)),
+    color = "team",
+    palette = "Dark2",
     legend = "bottom",
-    legend.title = "",
+    legend.title = "Team",
     ggtheme = wmf::theme_facet()
   )
   p <- ggsurv$plot +
@@ -42,9 +43,10 @@ if (!is.null(report_params$interleaved_group_names)) {
         xlab = "T (Dwell Time in seconds)",
         ylab = "Proportion of visits longer than T (P%)",
         surv.scale = "percent",
-        palette = colorRampPalette(RColorBrewer::brewer.pal(9, "Dark2"))(2 * n_wiki),
+        color = "team",
+        palette = "Dark2",
         legend = "bottom",
-        legend.title = "",
+        legend.title = "Team",
         ggtheme = wmf::theme_facet()
       )
       p <- ggsurv$plot +

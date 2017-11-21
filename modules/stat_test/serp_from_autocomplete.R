@@ -34,9 +34,10 @@ if (exists("fulltext_from_auto")) {
     xlab = "T (Dwell Time in seconds)",
     ylab = "Proportion of SERPs longer than T (P%)",
     surv.scale = "percent",
+    color = "group",
     palette = "Set1",
     legend = "bottom",
-    legend.title = "",
+    legend.title = "Group",
     legend.labs = traditional_test_groups,
     ggtheme = wmf::theme_min()
   )
@@ -59,9 +60,10 @@ if (exists("fulltext_from_auto")) {
       xlab = "T (Dwell Time in seconds)",
       ylab = "Proportion of SERPs longer than T (P%)",
       surv.scale = "percent",
-      palette = colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))(n_wiki * length(traditional_test_groups)),
+      color = "group",
+      palette = "Set1",
       legend = "bottom",
-      legend.title = "",
+      legend.title = "Group",
       ggtheme = wmf::theme_facet()
     )
     p <- ggsurv$plot +
