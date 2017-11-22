@@ -56,7 +56,7 @@ if (exists("visitedPages")) {
       ggtheme = wmf::theme_facet()
     )
     p <- ggsurv$plot +
-      facet_wrap(~ wiki, ncol = 3, scales = "free_y") +
+      facet_wrap(~ wiki, ncol = 3) +
       labs(
         title = "Proportion of visited search results last longer than T, by test group and wiki",
         subtitle = "With 95% confidence intervals."

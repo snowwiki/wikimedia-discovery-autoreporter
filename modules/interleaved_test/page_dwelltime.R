@@ -25,7 +25,7 @@ if (!is.null(report_params$interleaved_group_names)) {
     ggtheme = wmf::theme_facet()
   )
   p <- ggsurv$plot +
-    facet_wrap(~ group, scales = "free_y") +
+    facet_wrap(~ group) +
     labs(
       title = "How long users stay on each team's results",
       subtitle = "With 95% confidence intervals."
@@ -50,7 +50,7 @@ if (!is.null(report_params$interleaved_group_names)) {
         ggtheme = wmf::theme_facet()
       )
       p <- ggsurv$plot +
-        facet_wrap(~ wiki, ncol = 3, scales = "free_y") +
+        facet_wrap(~ wiki, ncol = 3) +
         labs(
           title = paste0("How long users stay on each team's results, by wiki (Group = ", this_group, ")"),
           subtitle = "With 95% confidence intervals."

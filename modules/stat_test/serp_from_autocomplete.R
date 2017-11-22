@@ -67,7 +67,7 @@ if (exists("fulltext_from_auto")) {
       ggtheme = wmf::theme_facet()
     )
     p <- ggsurv$plot +
-      facet_wrap(~ wiki, ncol = 3, scales = "free_y") +
+      facet_wrap(~ wiki, ncol = 3) +
       labs(
         title = "Proportion of search results pages from autocomplete last longer than T, by test group and wiki",
         subtitle = "With 95% confidence intervals."
